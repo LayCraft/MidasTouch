@@ -1,0 +1,10 @@
+name: MidasTouch
+main: com.laycraftdesign.midastouch.MidasTouch
+version: 0.1
+author: mrtherapist
+commands: 
+    midastouch: 
+      description: 'What should broken blocks be turned to?'
+      usage: '/midastouch [block|disable|enable|firstjoin|join|reload]'
+      permission: midastouch.command
+      permission-message: Try /pex user [userName] add midastouch.command then add "midastouch.action" for any action you want to allow a user to do.
