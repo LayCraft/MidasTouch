@@ -1,6 +1,5 @@
 package com.laycraftdesign.midastouch;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -26,7 +25,7 @@ public class MidasTouch extends JavaPlugin implements Listener {
 		// Save a default config file copy from config.yml. Does not overwrite an existing file.
 		getConfig().options().copyDefaults(true);
 		saveConfig();
-//		reloadConfig();// workaround to avoid a bug.
+		reloadConfig();// workaround to avoid a bug.
 		getLogger().info("engaged.");
 		
 		// clear the server's RAM version of the block type.
@@ -65,7 +64,7 @@ public class MidasTouch extends JavaPlugin implements Listener {
 						if(!hasCommandPermission(sender, "midastouch." + args[0])) return true;
 						//set block to first arg. If it fails it defaults to gold.
 						if (!blockSet(message)) { 
-							sender.sendMessage("Supported blocks: cake|coal|pumpkin|tnt|wood|wool|gold");
+							sender.sendMessage("Supported blocks: cake, coal, pumpkin, tnt, wood, wool, gold");
 						} else {
 							sender.sendMessage("Block type set to: " + message);
 						}
@@ -85,7 +84,11 @@ public class MidasTouch extends JavaPlugin implements Listener {
 						
 					case "firstjoin":
 						//must check that argument is empty so not to set message to ""
-						if(!hasCommandPermission(sender, "midastouch." + args[0]) && !message.equals("")) return true;
+						if(!hasCommandPermission(sender, "midastouch." + args[0])) return true;
+						if(message.equals("")) {
+							sender.sendMessage("Usage is /midastouch join Welcome back!");
+							return true;
+						}
 						changeMessage("noobMessage", message);
 						// Tell user message is changed and confirm that it has worked collects the message in previously used memory
 						sender.sendMessage("Returning user message set to:");
@@ -94,7 +97,11 @@ public class MidasTouch extends JavaPlugin implements Listener {
 						return true;
 						
 					case "join":
-						if(!hasCommandPermission(sender, "midastouch." + args[0]) && !message.equals("")) return true;
+						if(!hasCommandPermission(sender, "midastouch." + args[0])) return true;
+						if(message.equals("")) {
+							sender.sendMessage("Usage is /midastouch firstjoin Welcome noob!");
+							return true;
+						}
 						changeMessage("message", message);
 						// Tell user message is changed and confirm that it has worked collects the message in previously used memory
 						sender.sendMessage("New user message set to:");
@@ -114,22 +121,23 @@ public class MidasTouch extends JavaPlugin implements Listener {
 						return true;
 						
 					default:
-						return false;
+						// fall through to the message in plugin.yml by returning false
+						break;
 				}
 				
 			}
 		}
 		
-//		getLogger().info("The command was not caught by the arguments.");//debugging
+		getLogger().info(sender.getName() + " used a command that was not recognized.");//debugging
 		// the command is malformed or something therefore...
 		return false;
 	}
 	
-	/* When a player joins, the config file is checked instead of loading the potentially long list into RAM.*/
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public boolean onPlayerJoin(PlayerJoinEvent e) {
 		String message = "Problem loading message from config file.";
-		// TODO: make this file data.yml or something not the main config. new way of i/o to learn. :-)
+		// TODO: make this file data.yml or something purgeable not the main config. new way of i/o to learn. :-)
+		
 		if (getConfig().getBoolean("players."+ e.getPlayer().getName())) {
 			// get message from config, translate alt colours 
 			message = getConfig().getString("message", "Config file error.");
@@ -142,7 +150,7 @@ public class MidasTouch extends JavaPlugin implements Listener {
 			e.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', message));
 			
 			// add the new player username to the config file
-			// realistically this could have been an int counting their logins or something more useful.
+			// TODO: player data could be an int that counts their logins so that we can purge infrequently joining users later.
 			this.getConfig().set("players."+ e.getPlayer().getName(), true);
 			this.saveConfig();
 //			this.reloadConfig();
@@ -157,12 +165,12 @@ public class MidasTouch extends JavaPlugin implements Listener {
 		
 		// if the global block material is not set in RAM load it.
 		if (this.blockType == null) {
-			// put block type into RAM from config file. 
+			// put block type into RAM from config file if not already there. yml does not support material types.
 			//Default for block() function is gold. Error in config results in gold blocks. The midas touch.
 			blockSet(getConfig().getString("blockType"));
 		}
 		
-		// active is the state of the plugin running
+		// check that block is not a liquid and that the plugin state is active
 		if (!e.getBlock().isLiquid() && this.active) {
 			//Don't turn liquid into gold. Even Midas has limits.
 			//this prevents the block from being deleted. 
