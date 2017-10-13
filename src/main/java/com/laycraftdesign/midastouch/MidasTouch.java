@@ -114,7 +114,7 @@ public class MidasTouch extends JavaPlugin implements Listener {
 						if(!hasCommandPermission(sender, "midastouch." + args[0])) return true;
 						getLogger().info("reloading");
 						onDisable();
-						reloadConfig();
+						reloadConfig(); //possible quirk with reloading the config.
 						getLogger().info("config reloaded");
 						onEnable();
 						getLogger().info("reload complete");
@@ -133,10 +133,11 @@ public class MidasTouch extends JavaPlugin implements Listener {
 		return false;
 	}
 	
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.NORMAL)
 	public boolean onPlayerJoin(PlayerJoinEvent e) {
 		String message = "Problem loading message from config file.";
 		// TODO: make this file data.yml or something purgeable not the main config. new way of i/o to learn. :-)
+		// TODO: Why is this message sometimes sent back to the user 3 times?
 		
 		if (getConfig().getBoolean("players."+ e.getPlayer().getName())) {
 			// get message from config, translate alt colours 
@@ -227,7 +228,6 @@ public class MidasTouch extends JavaPlugin implements Listener {
 		}
 	}
 	
-	
 	public boolean changeMessage(String location, String message) {
 
 		//save to config file
@@ -236,7 +236,6 @@ public class MidasTouch extends JavaPlugin implements Listener {
 //		reloadConfig();
 		return true;
 	}
-
 	
 	private String stringSanitize(String dirty) {
 		String clean = dirty.trim();
@@ -248,6 +247,7 @@ public class MidasTouch extends JavaPlugin implements Listener {
 		// REGEX?
 		return clean;
 	}
+
 	// check permission for the command that the user wants to do. 
 	private boolean hasCommandPermission(CommandSender user, String permission) {
 		if (user.hasPermission(permission)) return true;
